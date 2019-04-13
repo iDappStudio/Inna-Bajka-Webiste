@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <title>Inna Bajka</title>
+    
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="mdl/material.min.css">
+    <link rel="stylesheet" href="css/snackbar.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.pink-orange.min.css" /> 
+
+    <script defer src="mdl/material.min.js"></script>
+    <script defer src="js/getmdl-select.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.9.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.9.2/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/5.9.2/firebase.js"></script>
+
+  <script>
+
+    var config = {
+        apiKey: "AIzaSyBgHI4IEsH5z_a7hSGYUD8roPnNGeITouM",
+        authDomain: "inna-bajka-mikolow.firebaseapp.com",
+        databaseURL: "https://inna-bajka-mikolow.firebaseio.com",
+        projectId: "inna-bajka-mikolow",
+        storageBucket: "inna-bajka-mikolow.appspot.com",
+        messagingSenderId: "900284038916"
+    };
+
+    firebase.initializeApp(config);
+
+    var db = firebase.firestore();
+
+  </script>
+
+    <style>
+    
+    .mdl-data-table {
+
+        width: 100%;
+
+    }
+
+    .fab {
+      position: fixed;
+      bottom: 0;
+      right: 0;
+      margin-right: 16px;
+      margin-bottom: 16px;
+    }
+
+    td {
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .rigth-text {
+        text-align: right;
+    }
+
+    .mdl-dialog-add {
+        width: 660px;
+    }
+
+    .center {
+        margin: auto;
+        width: 50%;
+        padding: 10px;
+    }
+
+    .vertical-center {
+        margin: 0;
+        position: absolute;
+        top: 50%;
+        -ms-transform: translateY(-50%);
+        transform: translateY(-50%);
+    }
+
+    body {
+        overflow: hidden;
+    }
+    ::-webkit-scrollbar {
+        width: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #FFF;
+        -webkit-box-shadow: inset 1px 1px 2px rgba(0,0,0,0.1);
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: #ffab40;
+        -webkit-box-shadow: inset 1px 1px 2px rgba(0,0,0,0.2);
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #e91e63;
+    }
+
+    ::-webkit-scrollbar-thumb:active {
+        background: #e91e63;
+        -webkit-box-shadow: inset 1px 1px 2px rgba(0,0,0,0.3);
+    }
+
+    .color-icon {
+        color: #e91e63;
+    }
+    
+    </style>
+
+</head>
+<body>
+    <!-- Always shows a header, even in smaller screens. -->
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+        <header class="mdl-layout__header">
+          <div class="mdl-layout__header-row">
+            <!-- Title -->
+            <span class="mdl-layout-title">Inna Bajka | Zarządzanie Menu</span>
+            <!-- Add spacer, to align navigation to the right -->
+            <div class="mdl-layout-spacer"></div>
+            <!-- Navigation. We hide it in small screens. -->
+            <nav class="mdl-navigation mdl-layout--large-screen-only">
+              <a class="mdl-navigation__link" href="">Menu</a>
+              <a class="mdl-navigation__link" href="">Wydarzenia</a>
+              <a class="mdl-navigation__link" href="">Nowości</a>
+            </nav>
+          </div>
+        </header>
+        <div class="mdl-layout__drawer">
+          <span class="mdl-layout-title">Inna Bajka</span>
+          <nav class="mdl-navigation">
+            <a class="mdl-navigation__link" href="">Menu</a>
+            <a class="mdl-navigation__link" href="">Wydarzenia</a>
+            <a class="mdl-navigation__link" href="">Nowości</a>
+          </nav>
+        </div>
+        <main class="mdl-layout__content">
+          <div class="page-content">
+                <table class="mdl-data-table mdl-js-data-table mdl-shadow--2dp" id="table" name="table">
+                    <div id="loading" class="mdl-progress mdl-js-progress mdl-progress__indeterminate" style="width: 100%"></div>
+                        <thead>
+                          <tr>
+                            <th style="width: 5px">Nr.</th>
+                            <th class="mdl-data-table__cell--non-numeric">Nazwa</th>
+                            <th class="mdl-data-table__cell--non-numeric">Opis</th>
+                            <th>Cena</th>
+                            <th>Ilość szt\ml</th>
+                            <th class="mdl-data-table__cell--non-numeric">Miara</th>
+                            <th class="mdl-data-table__cell--non-numeric">Kategoria</th>
+                            <th class="mdl-data-table__cell--non-numeric">Podkategoria</th>
+                            <th class="mdl-data-table__cell--non-numeric">Link do obrazka</th>
+                            <th class="mdl-data-table__cell--non-numeric" style="width: 220px">ID Dokumentu</th>
+                            <th class="mdl-data-table__cell--non-numeric" style="width: 5px">Widoczne</th>
+                            <th class="mdl-data-table__cell--non-numeric" style="width: 5px">Wyroznione</th>
+                            <th></th>
+                          </tr>
+                        </thead>
+                        <tbody id="table-body" name="table-body">
+                            <script>
+
+                              db.collection("menu").doc("menu").get().then((documentSnapshot) => {
+
+                                var kategorie = documentSnapshot.get("category");
+
+                                kategorie.forEach((kat) => {
+
+                                  db.collection("menu").doc("menu").collection(kat).onSnapshot(function(snapshot) {
+
+                                    snapshot.docChanges().forEach(function(change) {
+                                        
+                                        if (change.type === "added") {
+                                            
+                                            var row = document.getElementById("table").insertRow()
+                                            var rows = document.getElementById("table").getElementsByTagName("tbody")[0].getElementsByTagName("tr").length;
+                                            row.id = change.doc.id
+
+                                            var widoczne
+                                            var wyroznione
+
+                                            if(change.doc.get("widoczne")){
+                                                widoczne = '<td class="mdl-data-table__cell--non-numeric"><i class="mdl-icon-toggle__label material-icons color-icon">remove_red_eye</i></td>'
+                                            } else {
+                                                widoczne = '<td class="mdl-data-table__cell--non-numeric"><i class="mdl-icon-toggle__label material-icons">remove_red_eye</i></td>'
+                                            }
+
+                                            if(change.doc.get("wyroznione")){
+                                                wyroznione = '<td class="mdl-data-table__cell--non-numeric"><i class="mdl-icon-toggle__label material-icons color-icon">stars</i></td>'
+                                            } else {
+                                                wyroznione = '<td class="mdl-data-table__cell--non-numeric"><i class="mdl-icon-toggle__label material-icons">stars</i></td>'
+                                            }
+
+                                            row.innerHTML ='<td><form id="row">' + row.rowIndex + '</td>' + 
+                                            '<td class="mdl-data-table__cell--non-numeric">' + change.doc.get("nazwa") + '</td>' +
+                                            '<td class="mdl-data-table__cell--non-numeric">' + change.doc.get("opis") + '</td>' +
+                                            '<td>' + change.doc.get("cena") + '</td>' +
+                                            '<td>' + change.doc.get("ilosc") + '</td>' +
+                                            '<td class="mdl-data-table__cell--non-numeric">' + change.doc.get("miara") + '</td>' +
+                                            '<td class="mdl-data-table__cell--non-numeric">' + kat + '</td>' +
+                                            '<td class="mdl-data-table__cell--non-numeric">' + change.doc.get("podkategoria") + '</td>' +
+                                            '<td class="mdl-data-table__cell--non-numeric">' + change.doc.get("obrazek") + '</td>' +
+                                            '<td class="mdl-data-table__cell--non-numeric">' + change.doc.id + '</td>' +
+                                            widoczne +
+                                            wyroznione +
+                                            '<td>' +
+                                                '<button class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" id="btn-edit"' + 
+                                                'data-nazwa="' + change.doc.get("nazwa") + '"' +
+                                                'data-opis="' + change.doc.get("opis") + '"' +
+                                                'data-cena="' + change.doc.get("cena") + '"' +
+                                                'data-ilosc="' + change.doc.get("ilosc") + '"' +
+                                                'data-kategoria="' + kat + '"' +
+                                                'data-obrazek="' + change.doc.get("obrazek") + '"' +
+                                                'data-widoczne="' + change.doc.get("widoczne") + '"' +
+                                                'data-wyroznione="' + change.doc.get("wyroznione") + '"' +
+                                                'data-podkategoria="' + change.doc.get("podkategoria") + '"' +
+                                                'data-miara="' + change.doc.get("miara") + '"' +
+                                                'data-id="' + change.doc.id + '"' +
+                                                '><i class="material-icons">edit</i></button>' +
+                                                '<button class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" onclick="del(\'' + change.doc.id + '\', \'' + kat + '\')"><i class="material-icons">delete</i></button>' +
+                                            '</td></form>';
+
+                                            rows++;
+
+                                            if(rows++ == snapshot.size){
+                                              
+                                              $("#loading").slideUp();
+
+                                            }
+
+                                        }
+
+                                        if(change.type == "removed") {
+
+                                            var row = document.getElementById(change.doc.id)
+                                            row.parentNode.removeChild(row);
+
+                                        }
+
+                                        if(change.type == "modified") {
+
+                                            var row = document.getElementById(change.doc.id)
+
+                                            var widoczne
+                                            var wyroznione
+
+                                            if(change.doc.get("widoczne")){
+                                                widoczne = '<td class="mdl-data-table__cell--non-numeric"><i class="mdl-icon-toggle__label material-icons color-icon">remove_red_eye</i></td>'
+                                            } else {
+                                                widoczne = '<td class="mdl-data-table__cell--non-numeric"><i class="mdl-icon-toggle__label material-icons">remove_red_eye</i></td>'
+                                            }
+
+                                            if(change.doc.get("wyroznione")){
+                                                wyroznione = '<td class="mdl-data-table__cell--non-numeric"><i class="mdl-icon-toggle__label material-icons color-icon">stars</i></td>'
+                                            } else {
+                                                wyroznione = '<td class="mdl-data-table__cell--non-numeric"><i class="mdl-icon-toggle__label material-icons">stars</i></td>'
+                                            }
+
+                                            row.innerHTML ='<td><form id="row">' + row.rowIndex + '</td>' + 
+                                            '<td class="mdl-data-table__cell--non-numeric">' + change.doc.get("nazwa") + '</td>' +
+                                            '<td class="mdl-data-table__cell--non-numeric">' + change.doc.get("opis") + '</td>' +
+                                            '<td>' + change.doc.get("cena") + '</td>' +
+                                            '<td>' + change.doc.get("ilosc") + '</td>' +
+                                            '<td class="mdl-data-table__cell--non-numeric">' + change.doc.get("miara") + '</td>' +
+                                            '<td class="mdl-data-table__cell--non-numeric">' + kat + '</td>' +
+                                            '<td class="mdl-data-table__cell--non-numeric">' + change.doc.get("podkategoria") + '</td>' +
+                                            '<td class="mdl-data-table__cell--non-numeric">' + change.doc.get("obrazek") + '</td>' +
+                                            '<td class="mdl-data-table__cell--non-numeric">' + change.doc.id + '</td>' +
+                                            widoczne +
+                                            wyroznione +
+                                            '<td>' +
+                                                '<button class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored" id="btn-edit"' + 
+                                                'data-nazwa="' + change.doc.get("nazwa") + '"' +
+                                                'data-opis="' + change.doc.get("opis") + '"' +
+                                                'data-cena="' + change.doc.get("cena") + '"' +
+                                                'data-ilosc="' + change.doc.get("ilosc") + '"' +
+                                                'data-kategoria="' + kat + '"' +
+                                                'data-obrazek="' + change.doc.get("obrazek") + '"' +
+                                                'data-widoczne="' + change.doc.get("widoczne") + '"' +
+                                                'data-wyroznione="' + change.doc.get("wyroznione") + '"' +
+                                                'data-podkategoria="' + change.doc.get("podkategoria") + '"' +
+                                                'data-miara="' + change.doc.get("miara") + '"' +
+                                                'data-id="' + change.doc.id + '"' +
+                                                '><i class="material-icons">edit</i></button>' +
+                                                '<button class="mdl-button mdl-js-button mdl-button--icon mdl-button--colored delete-btn" onclick="del(\'' + change.doc.id + '\', \'' + kat + '\')"><i class="material-icons">delete</i></button>' +
+                                            '</form></td>';
+
+                                        }
+
+                                    });
+
+                                  });
+
+                                });
+
+                              });
+
+                            </script>
+                        </tbody>
+                  </table>
+                  
+                  <button class="mdl-button mdl-js-button mdl-button--fab mdl-js-ripple-effect mdl-button--colored fab" id="addFab">
+                      <i class="material-icons" style="color: white">add</i>
+                  </button>
+          </div>
+        </main>
+      </div>
+
+        <!--Dialogs-->
+        <!-- Dialog Ładowania -->
+        <dialog class="mdl-dialog" id="dialog-loading" name="dialog-loading">
+            <p class="title-dialog">Wykonywanie operacji...</p>
+            <div class="mdl-dialog__content">
+                <div id="p3" class="mdl-progress mdl-js-progress mdl-progress__indeterminate"></div>
+            </div>
+        </dialog>
+
+        <!-- Dialog od dodawania danych -->
+        <dialog class="mdl-dialog mdl-dialog-add" id="dialog-add" name="dialog-add">
+            <p class="title-dialog">Dodaj produkt</p>
+            <div class="mdl-dialog__content">
+                  <form id="addForm">
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                        <input class="mdl-textfield__input" type="text" name="nazwa">
+                        <label class="mdl-textfield__label" for="nazwa">nazwa</label>
+                    </div>&nbsp;&nbsp;
+
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 92px">
+                        <input class="mdl-textfield__input rigth-text" type="text" pattern="-?[0-9]*(\.[0-9]+)?" name="cena"> 
+                        <label class="mdl-textfield__label rigth-text" for="cena">cena</label>
+                        <span class="mdl-textfield__error rigth-text">wpisz tylko cyfry</span>
+                    </div>&nbsp;&nbsp;
+
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 92px">
+                        <input class="mdl-textfield__input rigth-text" type="text" pattern="-?[0-9]*(\.[0-9]+)?" name="ilosc">
+                        <label class="mdl-textfield__label rigth-text" for="ilosc">ilość</label>
+                        <span class="mdl-textfield__error rigth-text">wpisz tylko cyfry</span>
+                    </div>&nbsp;&nbsp;
+
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 92px">
+                        <input type="text" name="miara" class="mdl-textfield__input">
+                        <label class="mdl-textfield__label" for="miara">miara</label>
+                    </div>
+
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label getmdl-select">
+                        <input type="text" value="" class="mdl-textfield__input" id="kat" readonly>
+                        <input type="hidden" value="" name="kat">
+                        <label for="kat" class="mdl-textfield__label">Kategoria</label>
+                        <ul for="kat" class="mdl-menu mdl-menu--bottom-left mdl-js-menu">
+                            <li class="mdl-menu__item" data-val="Jedzenie">Jedzenie</li>
+                            <li class="mdl-menu__item" data-val="Napoje">Napoje</li>
+                            <li class="mdl-menu__item" data-val="Kawy i Herbaty">Kawy i Herbaty</li>
+                            <li class="mdl-menu__item" data-val="Drinki">Drinki</li>
+                            <li class="mdl-menu__item" data-val="Wina">Wina</li>
+                            <li class="mdl-menu__item" data-val="Piwa">Piwa</li>
+                        </ul>
+                    </div>&nbsp;&nbsp;
+
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label">
+                        <input type="text" name="podkategoria" class="mdl-textfield__input">
+                        <label class="mdl-textfield__label" for="podkategoria">podkategoria</label>
+                    </div>
+
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 100%">
+                        <input class="mdl-textfield__input" type="text" name="obrazek">
+                        <label class="mdl-textfield__label" for="obrazek">link do obrazka (nie wymagane)</label>
+                    </div>
+                    
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 100%">
+                        <textarea class="mdl-textfield__input" type="text" rows="10" id="opis" name="opis"></textarea>
+                        <label class="mdl-textfield__label" for="opis">Opis</label>
+                    </div>
+                    
+                    <div>
+                        
+                        <label class="mdl-icon-toggle mdl-js-icon-toggle mdl-js-ripple-effect" id="label-widoczne" for="widoczne" style="width: 100px;">
+                            <input type="checkbox" id="widoczne" name="widoczne" class="mdl-icon-toggle__input" checked>
+                            <i class="mdl-icon-toggle__label material-icons">remove_red_eye</i>
+                            <span class="vertical-center">Widoczne</span>
+                        </label>
+
+                        <label class="mdl-icon-toggle mdl-js-icon-toggle mdl-js-ripple-effect" id="label-wyroznione" for="wyroznione" style="width: 100px;">
+                            <input type="checkbox" id="wyroznione" name="wyroznione" class="mdl-icon-toggle__input">
+                            <i class="mdl-icon-toggle__label material-icons">stars</i>
+                            <span class="vertical-center">Wyróżnione</span>
+                        </label>
+
+                    </div>
+                </form>
+
+            </div>
+            <div class="mdl-dialog__actions">
+                <button type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--primary" id="add-button-add">Dodaj Produkt</button>
+                <button type="button" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" id="close-button-add">Anuluj</button>
+            </div>
+            
+        </dialog>
+
+        <!-- Dialog od edycji danych -->
+        <dialog class="mdl-dialog mdl-dialog-add" id="dialog-edit" name="dialog-edit">
+            <p class="title-dialog">Dodaj produkt</p>
+            <div class="mdl-dialog__content">
+                  <form id="editForm">
+                      
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" id="div-nazwa2">
+                        <input class="mdl-textfield__input" type="text" name="nazwa2">
+                        <label class="mdl-textfield__label" for="nazwa2">nazwa</label>
+                    </div>&nbsp;&nbsp;
+
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 92px" id="div-cena2">
+                        <input class="mdl-textfield__input rigth-text" type="text" pattern="-?[0-9]*(\.[0-9]+)?" name="cena2"> 
+                        <label class="mdl-textfield__label rigth-text" for="cena2">cena</label>
+                        <span class="mdl-textfield__error rigth-text">wpisz tylko cyfry</span>
+                    </div>&nbsp;&nbsp;
+
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 92px" id="div-ilosc2">
+                        <input class="mdl-textfield__input rigth-text" type="text" pattern="-?[0-9]*(\.[0-9]+)?" name="ilosc2">
+                        <label class="mdl-textfield__label rigth-text" for="ilosc2">ilość</label>
+                        <span class="mdl-textfield__error rigth-text">wpisz tylko cyfry</span>
+                    </div>&nbsp;&nbsp;
+
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 92px" id="div-miara2">
+                        <input type="text" name="miara2" class="mdl-textfield__input">
+                        <label class="mdl-textfield__label" for="miara2">miara</label>
+                    </div>
+
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label getmdl-select" id="div-kat2">
+                        <input type="text" value="" class="mdl-textfield__input" id="kat2" readonly>
+                        <input type="hidden" value="" name="kat2">
+                        <label for="kat2" class="mdl-textfield__label">Kategoria</label>
+                        <ul for="kat2" class="mdl-menu mdl-menu--bottom-left mdl-js-menu">
+                            <li class="mdl-menu__item" data-val="Jedzenie">Jedzenie</li>
+                            <li class="mdl-menu__item" data-val="Napoje">Napoje</li>
+                            <li class="mdl-menu__item" data-val="Kawy i Herbaty">Kawy i Herbaty</li>
+                            <li class="mdl-menu__item" data-val="Drinki">Drinki</li>
+                            <li class="mdl-menu__item" data-val="Wina">Wina</li>
+                            <li class="mdl-menu__item" data-val="Piwa">Piwa</li>
+                        </ul>
+                    </div>&nbsp;&nbsp;
+
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" id="div-podkategoria2">
+                        <input type="text" name="podkategoria2" class="mdl-textfield__input">
+                        <label class="mdl-textfield__label" for="podkategoria2">podkategoria</label>
+                    </div>
+
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 100%" id="div-obrazek2">
+                        <input class="mdl-textfield__input" type="text" name="obrazek2">
+                        <label class="mdl-textfield__label" for="obrazek2">link do obrazka (nie wymagane)</label>
+                    </div>
+                    
+                    <div class="mdl-textfield mdl-js-textfield mdl-textfield--floating-label" style="width: 100%" id="div-opis2">
+                        <textarea class="mdl-textfield__input" type="text" rows="10" id="opis2" name="opis2"></textarea>
+                        <label class="mdl-textfield__label" for="opis2">Opis</label>
+                    </div>
+                    
+                    <div>
+                        
+                        <label class="mdl-icon-toggle mdl-js-icon-toggle mdl-js-ripple-effect" for="widoczne2" style="width: 100px;">
+                            <input type="checkbox" id="widoczne2" name="widoczne"2 class="mdl-icon-toggle__input" checked>
+                            <i class="mdl-icon-toggle__label material-icons">remove_red_eye</i>
+                            <span class="vertical-center">Widoczne</span>
+                        </label>
+
+                        <label class="mdl-icon-toggle mdl-js-icon-toggle mdl-js-ripple-effect" for="wyroznione2" style="width: 100px;">
+                            <input type="checkbox" id="wyroznione2" name="wyroznione2" class="mdl-icon-toggle__input">
+                            <i class="mdl-icon-toggle__label material-icons">stars</i>
+                            <span class="vertical-center">Wyróżnione</span>
+                        </label>
+
+                    </div>
+                </form>
+
+            </div>
+            <div class="mdl-dialog__actions">
+                <button type="button" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--primary" id="add-button-edit">Edytuj Produkt</button>
+                <button type="button" class="mdl-button mdl-button--colored mdl-js-button mdl-js-ripple-effect" id="close-button-edit">Anuluj</button>
+            </div>
+            
+        </dialog>
+
+</body>
+
+<script type="text/javascript" src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.2.1/material.min.js"></script>
+
+<script type="text/javascript">
+
+        var dialog = document.querySelector('#dialog-edit');
+        var dialog2 = document.querySelector('#dialog-add');
+
+        var loading = document.querySelector('#dialog-loading');
+
+        var buttonClose = document.querySelector('#close-button-add');
+        var buttonYes = document.querySelector('#add-button-add');
+
+        var buttonClose2 = document.querySelector('#close-button-edit');
+        var buttonYes2 = document.querySelector('#add-button-edit');
+                
+        //Funkcja która dodaje nowy produkt do bazy danych
+        $("#addFab").click(function(){
+
+            if (!dialog2.showModal) {
+                dialogPolyfill.registerDialog(dialog);
+            }
+
+            if (!loading.showModal) {
+                dialogPolyfill.registerDialog(loading);
+            }
+
+            dialog2.showModal();
+
+            $(buttonClose).click(function() {
+                alert($('#label-widoczne').is('.is-checked') + " | " + $('#label-wyroznione').is('.is-checked'))
+            });
+
+            $(buttonYes).click(function() {
+
+                var nazwa = $('#dialog-add').find('input[name="nazwa"]').val();
+                var opis = $('#dialog-add').find('#opis').val();
+                var cena = $('#dialog-add').find('input[name="cena"]').val();
+                var ilosc = $('#dialog-add').find('input[name="ilosc"]').val();
+                var kategoria = $('#dialog-add').find('#kat').val();
+                var obrazek = $('#dialog-add').find('input[name="obrazek"]').val();
+
+                var widoczne;
+                if($('#label-widoczne').is('.is-checked')) {
+                    widoczne = true;
+                } else {
+                    widoczne = false;
+                }
+
+                var wyroznione;
+                if($('#label-wyroznione').is('.is-checked')) {
+                    wyroznione = true;
+                } else {
+                    wyroznione = false;
+                }
+
+                var podkategoria = $('#dialog-add').find('input[name="podkategoria"]').val();
+                var miara = $('#dialog-add').find('input[name="miara"]').val();
+
+                if(nazwa == '') {
+                    createSnackbar("wpisz nazwę"); 
+                    return false;  
+                }
+
+                if(cena == '') {
+                    createSnackbar("wpisz cenę"); 
+                    return false;  
+                }
+
+                if(ilosc == '') {
+                    createSnackbar("wpisz ilość"); 
+                    return false;  
+                }
+
+                if(miara == '') {
+                    createSnackbar("wpisz miarę"); 
+                    return false;  
+                }
+
+                if(kategoria == '') {
+                    createSnackbar("wybierz kategorię"); 
+                    return false;  
+                }
+
+                if(podkategoria == '') {
+                    createSnackbar("wpisz podkategorię");  
+                    return false;  
+                }
+
+                if(opis == '') {
+                    createSnackbar("wpisz opis"); 
+                    return false;  
+                }
+
+                loading.showModal();
+
+                db.collection("menu").doc("menu").collection(kategoria).add({
+                    nazwa: nazwa,
+                    opis: opis,
+                    cena: Number(cena),
+                    ilosc: Number(ilosc),
+                    miara: miara,
+                    podkategoria: podkategoria,
+                    wyroznione: wyroznione,
+                    widoczne: widoczne,
+                    obrazek: obrazek
+
+                }).then(function(e) {
+                    dialog2.close();
+                    loading.close()
+                    createSnackbar("Dodano produkt do menu: " + e.id); 
+                }).catch(function(error) {
+                    loading.close()
+                    createSnackbar("Nie udało się dodać produktu");
+                });
+
+            });
+
+        });
+
+        function del(id, kat){
+
+            if (!loading.showModal) {
+                dialogPolyfill.registerDialog(loading);
+            }
+
+            loading.showModal();
+
+            db.collection("menu").doc("menu").collection(kat).doc(id).delete().then(function() {
+                loading.close();
+                createSnackbar("Usunięto produkt z menu"); 
+            }).catch(function(error) {
+                loading.close();
+                createSnackbar("Nie udało się usunąć produktu");
+            });
+
+        }
+
+    // Funkcja do edycji rekordu
+    // $(document).on('click', '#btn-edit', function(){
+
+    //     var nazwa = $(this).data("nazwa");
+    //     var opis = $(this).data("opis");
+    //     var cena = $(this).data("cena");
+    //     var ilosc = $(this).data("ilosc");
+    //     var kategoria = $(this).data("kategoria");
+    //     var obrazek = $(this).data("obrazek");
+    //     var widoczne = $(this).data("widoczne");
+    //     var wyroznione = $(this).data("wyroznione");
+    //     var podkategoria = $(this).data("podkategoria");
+    //     var miara = $(this).data("miara");
+    //     var id = $(this).data("id");
+
+    //     $('.mdl-textfield--floating-label').addClass('is-dirty')
+                
+    //     $('#dialog-edit').find('input[name="nazwa2"]').val(nazwa);
+    //     $('#dialog-edit').find('input[name="opis2"]').val(opis);
+    //     $('#dialog-edit').find('input[name="cena2"]').val(cena);
+    //     $('#dialog-edit').find('input[name="ilosc2"]').val(ilosc);
+    //     $('#dialog-edit').find('#kat2').val(kategoria);
+    //     $('#dialog-edit').find('#opis2').val(opis);
+    //     $('#dialog-edit').find('input[name="obrazek2"]').val(obrazek);
+    //     $('#dialog-edit').find('input[name="podkategoria2"]').val(podkategoria);
+    //     $('#dialog-edit').find('input[name="miara2"]').val(miara);
+
+    //     if (!dialog.showModal) {
+    //       dialogPolyfill.registerDialog(dialog);
+    //     }
+
+    //     dialog.showModal();
+
+    //     buttonClose2.addEventListener('click', function() {
+    //       dialog.close();
+    //     });
+
+    //     buttonYes2.addEventListener('click', function() {
+
+    //             var nazwa = $('#dialog-edit').find('input[name="nazwa2"]').val();
+    //             var opis = $('#dialog-edit').find('#opis2').val();
+    //             var cena = $('#dialog-edit').find('input[name="cen2a"]').val();
+    //             var ilosc = $('#dialog-edit').find('input[name="ilosc2"]').val();
+    //             var kategoria = $('#dialog-edit').find('#kat2').val();
+    //             var obrazek = $('#dialog-edit').find('input[name="obrazek2"]').val();
+
+    //             var widoczne;
+    //             alert($('#dialog-edit').find('#widoczne').is('.is-checked'))
+    //             if($('#dialog-edit').find('#widoczne').is('.is-checked')) {
+    //                 widoczne = true;
+    //             } else {
+    //                 widoczne = false;
+    //             }
+
+    //             var wyroznione;
+    //             if($('#dialog-edit').find('#wyroznione').is('.is-checked')) {
+    //                 wyroznione = true;
+    //             } else {
+    //                 wyroznione = false;
+    //             }
+
+    //             var podkategoria = $('#dialog-edit').find('input[name="podkategoria2"]').val();
+    //             var miara = $('#dialog-edit').find('input[name="miara2"]').val();
+
+    //             if(nazwa == '') {
+    //                 createSnackbar("wpisz nazwę"); 
+    //                 return false;  
+    //             }
+
+    //             if(cena == '') {
+    //                 createSnackbar("wpisz cenę"); 
+    //                 return false;  
+    //             }
+
+    //             if(ilosc == '') {
+    //                 createSnackbar("wpisz ilość"); 
+    //                 return false;  
+    //             }
+
+    //             if(miara == '') {
+    //                 createSnackbar("wpisz miarę"); 
+    //                 return false;  
+    //             }
+
+    //             if(kategoria == '') {
+    //                 createSnackbar("wybierz kategorię"); 
+    //                 return false;  
+    //             }
+
+    //             if(podkategoria == '') {
+    //                 createSnackbar("wpisz podkategorię");  
+    //                 return false;  
+    //             }
+
+    //             if(opis == '') {
+    //                 createSnackbar("wpisz opis"); 
+    //                 return false;  
+    //             }
+
+    //             loading.showModal();
+
+    //             db.collection("menu").doc("menu").collection(kategoria).doc(id).set({
+    //                 nazwa: nazwa,
+    //                 opis: opis,
+    //                 cena: Number(cena),
+    //                 ilosc: Number(ilosc),
+    //                 miara: miara,
+    //                 podkategoria: podkategoria,
+    //                 wyroznione: wyroznione,
+    //                 widoczne: widoczne,
+    //                 obrazek: obrazek
+
+    //             }).then(function() {
+    //                 dialog2.close();
+    //                 loading.close()
+    //                 createSnackbar("Edycja produktu powiodła się"); 
+    //             }).catch(function(error) {
+    //                 loading.close()
+    //                 createSnackbar("Nie udało się zedytować produktu");
+    //             });
+
+    //     });
+
+    //   });
+
+        var createSnackbar = (function() {
+
+            var previous = null;
+            
+            return function(message, actionText, action) {
+
+                if (previous) {
+                    previous.dismiss();
+                }
+
+                var snackbar = document.createElement('div');
+                snackbar.className = 'paper-snackbar';
+                snackbar.dismiss = function() {
+                    this.style.opacity = 0;
+                };
+
+                var text = document.createTextNode(message);
+                snackbar.appendChild(text);
+                if (actionText) {
+                    if (!action) {
+                        action = snackbar.dismiss.bind(snackbar);
+                    }
+
+                    var actionButton = document.createElement('button');
+                    actionButton.className = 'action';
+                    actionButton.innerHTML = actionText;
+                    actionButton.addEventListener('click', action);
+                    snackbar.appendChild(actionButton);
+
+                }
+                
+                setTimeout(function() {
+                    if (previous === this) {
+                        previous.dismiss();
+                    }
+                }.bind(snackbar), 5000);
+                
+                snackbar.addEventListener('transitionend', function(event, elapsed) {
+                    if (event.propertyName === 'opacity' && this.style.opacity == 0) {
+                        this.parentElement.removeChild(this);
+                        if (previous === this) {
+                        previous = null;
+                        }
+                    }
+                }.bind(snackbar));
+                
+                previous = snackbar;
+                document.body.appendChild(snackbar);
+                getComputedStyle(snackbar).bottom;
+                snackbar.style.bottom = '0px';
+                snackbar.style.opacity = 1;
+            };
+        })();
+
+    </script>
+</html>
